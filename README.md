@@ -28,7 +28,7 @@ Memory Bank is an MCP server that helps teams create, manage, and access structu
 
 ```bash
 # Clone the repository
-git clone https://github.com/tuncer-byte/memory-bank-mcp.git
+git clone https://github.com/delorenj/memory-bank-mcp.git
 cd memory-bank-mcp
 
 # Install dependencies
@@ -64,26 +64,10 @@ To integrate Memory Bank with the Model Context Protocol (MCP), add the followin
 ```json
 {
   "memoryBank": {
-    "command": "node",
-    "args": ["/path/to/memory-bank-mcp/dist/index.js"],
+    "command": "npx",
+    "args": ["@delorenj/memory-bank-mcp"],
     "env": {
       "GEMINI_API_KEY": "your_gemini_api_key_here"
-    }
-  }
-}
-```
-
-Replace `/path/to/memory-bank-mcp/dist/index.js` with the absolute path to your built index.js file, and add your Gemini API key (if applicable).
-
-Example:
-
-```json
-{
-  "memoryBank": {
-    "command": "node",
-    "args": ["/Users/username/memory-bank-mcp/dist/index.js"],
-    "env": {
-      "GEMINI_API_KEY": "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXX"
     }
   }
 }

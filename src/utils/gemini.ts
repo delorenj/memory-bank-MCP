@@ -7,38 +7,36 @@ const DEFAULT_API_KEY = 'AIzaSyBCwxeNGM9Jwnl4C5iqfgZtlsd4RcFanWE';
 
 let apiKey = DEFAULT_API_KEY;
 
-console.log('Checking for Gemini API key...');
-if (!apiKey) {
-  console.error('GEMINI_API_KEY environment variable is not defined.');
+// Load API key from environment variables
+try {
+  dotenv.config();
+  apiKey = process.env.GEMINI_API_KEY || DEFAULT_API_KEY;
   
-  try {
-    const envPath = path.resolve(process.cwd(), '.env');
-    if (!fs.existsSync(envPath)) {
-      fs.writeFileSync(envPath, `GEMINI_API_KEY=${DEFAULT_API_KEY}`, 'utf-8');
-      console.log('Created .env file with default API key.');
+  if (!process.env.GEMINI_API_KEY) {
+    try {
+      const envPath = path.resolve(process.cwd(), '.env');
+      if (!fs.existsSync(envPath)) {
+        fs.writeFileSync(envPath, `GEMINI_API_KEY=${DEFAULT_API_KEY}`, 'utf-8');
+      }
+    } catch (err) {
+      console.error('Failed to create .env file:', err);
     }
-  } catch (err) {
-    console.error('Failed to create .env file:', err);
   }
   
+  if (apiKey === 'your_gemini_api_key_here') {
+    apiKey = DEFAULT_API_KEY;
+  }
+} catch (error) {
+  // Fallback to default API key if there's an error loading from environment
   apiKey = DEFAULT_API_KEY;
-  console.log('Using default API key.');
 }
-
-if (apiKey === 'your_gemini_api_key_here') {
-  console.warn('GEMINI_API_KEY is set to the example value. Using default API key instead.');
-  apiKey = DEFAULT_API_KEY;
-}
-
-console.log('Gemini API key found.');
 
 let genAI: GoogleGenerativeAI;
 try {
   genAI = new GoogleGenerativeAI(apiKey);
-  console.log('Gemini client created successfully.');
 } catch (error) {
   console.error('Failed to create Gemini client:', error);
-  throw new Error(`Gemini client oluşturulamadı: ${error}`);
+  throw new Error(`Gemini client initialization failed: ${error}`);
 }
 
 const safetySettings = [
@@ -78,8 +76,8 @@ export async function generateContent(prompt: string): Promise<string> {
     const response = result.response;
     return response.text();
   } catch (error) {
-    console.error('Gemini API hatası:', error);
-    throw new Error(`Belge içeriği üretilirken hata oluştu: ${error}`);
+    console.error('Gemini API error:', error);
+    throw new Error(`Error generating document content: ${error}`);
   }
 }
 
@@ -94,13 +92,13 @@ export async function fillTemplate(templatePath: string, values: Record<string, 
     
     return templateContent;
   } catch (error) {
-    console.error('Şablon doldurma hatası:', error);
-    throw new Error(`Şablon doldurulurken hata oluştu: ${error}`);
+    console.error('Template filling error:', error);
+    throw new Error(`Error filling template: ${error}`);
   }
 }
 
 export async function generateAllDocuments(goal: string): Promise<Record<string, string>> {
-  const currentDate = new Date().toLocaleDateString('tr-TR');
+  const currentDate = new Date().toLocaleDateString('en-US');
   
   const basePrompt = `
 You are a project documentation expert. You will create comprehensive documentation for the following project:
@@ -170,8 +168,6 @@ Create the following documents for this project:
   const results: Record<string, string> = {};
 
   for (const [docType, docPrompt] of Object.entries(documentTypes)) {
-    console.log(`${docType} belgesi oluşturuluyor...`);
-    
     const fullPrompt = `${basePrompt}${docPrompt}\n\nPlease create content only for the "${docType}" document. Use Markdown format with section headers marked by ##. At the end of the document, add the note "Created on ${currentDate}".`;
     
     const content = await generateContent(fullPrompt);
@@ -179,4 +175,4 @@ Create the following documents for this project:
   }
 
   return results;
-} 
+}

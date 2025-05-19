@@ -4,20 +4,21 @@ import { z } from 'zod';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
-import { generateAllDocuments } from '../utils/gemini.js';
+import { generateAllDocuments } from '../utils/gemini.ts';
 import { 
   createMemoryBankStructure, 
   saveDocument, 
   readDocument, 
   readAllDocuments, 
   exportMemoryBank 
-} from '../utils/fileManager.js';
-import { generateCursorRules } from '../utils/cursorRulesGenerator.js';
+} from '../utils/fileManager.ts';
+import { generateCursorRules } from '../utils/cursorRulesGenerator.ts';
 
 // Create MCP server
 const server = new McpServer({
   name: 'Memory Bank MCP',
-  version: '1.0.0'
+  version: '1.0.0',
+  description: 'A tool for creating and managing structured project documentation'
 });
 
 // Import URL and fileURLToPath for ESM compatible __dirname alternative
@@ -29,7 +30,8 @@ const getWorkspaceRootDir = () => {
   // Try to get VS Code workspace folder from environment variables
   // This is more reliable than process.cwd() in VS Code environment
   if (process.env.VSCODE_WORKSPACE_FOLDER) {
-    console.log(`Using VS Code workspace folder: ${process.env.VSCODE_WORKSPACE_FOLDER}`);
+    // Don't log to stdout, use stderr if needed
+    // console.log(`Using VS Code workspace folder: ${process.env.VSCODE_WORKSPACE_FOLDER}`);
     return process.env.VSCODE_WORKSPACE_FOLDER;
   }
   
@@ -39,13 +41,13 @@ const getWorkspaceRootDir = () => {
   const __dirname = dirname(__filename);
   
   const currentFilePath = __dirname;
-  console.log(`Current file directory: ${currentFilePath}`);
+  // console.log(`Current file directory: ${currentFilePath}`);
   
   // Try to find the workspace root by looking for package.json
   let dir = currentFilePath;
   while (dir !== path.parse(dir).root) {
     if (fs.existsSync(path.join(dir, 'package.json'))) {
-      console.log(`Found workspace root at: ${dir}`);
+      // console.log(`Found workspace root at: ${dir}`);
       return dir;
     }
     dir = path.dirname(dir);
@@ -69,10 +71,10 @@ server.tool(
   },
   async ({ goal, geminiApiKey, location }) => {
     try {
-      // Diagnostics: Log environment info
-      console.log(`Current working directory: ${process.cwd()}`);
-      console.log(`Node version: ${process.version}`);
-      console.log(`Platform: ${process.platform}`);
+      // Diagnostics: Log environment info - remove console.log statements
+      // console.log(`Current working directory: ${process.cwd()}`);
+      // console.log(`Node version: ${process.version}`);
+      // console.log(`Platform: ${process.platform}`);
       
       // Determine where to create the memory-bank directory
       let baseDir;
@@ -87,22 +89,22 @@ server.tool(
           // If relative path is provided, resolve against current working directory
           baseDir = path.resolve(process.cwd(), location);
         }
-        console.log(`Using user specified base location: ${baseDir}`);
+        // console.log(`Using user specified base location: ${baseDir}`);
       } else {
         // If no location provided, use current working directory as base
         baseDir = process.cwd();
-        console.log(`No location specified, using current directory as base: ${baseDir}`);
+        // console.log(`No location specified, using current directory as base: ${baseDir}`);
       }
       
       // Create memory-bank directory inside the base directory
       memoryBankDir = path.join(baseDir, 'memory-bank');
-      console.log(`Will create Memory Bank structure at: ${memoryBankDir}`);
+      // console.log(`Will create Memory Bank structure at: ${memoryBankDir}`);
       
       // Ensure parent directory exists if needed
       const parentDir = path.dirname(memoryBankDir);
       try {
         await fs.ensureDir(parentDir);
-        console.log(`Ensured parent directory exists: ${parentDir}`);
+        // console.log(`Ensured parent directory exists: ${parentDir}`);
       } catch (error) {
         console.error(`Error ensuring parent directory: ${error}`);
         throw new Error(`Cannot create or access parent directory: ${error}`);
@@ -111,12 +113,12 @@ server.tool(
       // Set global memory bank directory
       MEMORY_BANK_DIR = memoryBankDir;
       
-      console.log(`Will create Memory Bank at: ${MEMORY_BANK_DIR}`);
+      // console.log(`Will create Memory Bank at: ${MEMORY_BANK_DIR}`);
       
       // Ensure memory-bank directory exists before passing to createMemoryBankStructure
       try {
         await fs.ensureDir(MEMORY_BANK_DIR);
-        console.log(`Created Memory Bank root directory: ${MEMORY_BANK_DIR}`);
+        // console.log(`Created Memory Bank root directory: ${MEMORY_BANK_DIR}`);
       } catch (error) {
         console.error(`Error creating Memory Bank directory: ${error}`);
         throw new Error(`Cannot create Memory Bank directory: ${error}`);
@@ -133,12 +135,12 @@ server.tool(
       
       try {
         // Debug: List all search paths we're going to try
-        console.log('Searching for .byterules template file...');
+        // console.log('Searching for .byterules template file...');
         
         // Get the ESM compatible dirname
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = dirname(__filename);
-        console.log(`Current file directory: ${__dirname}`);
+        // console.log(`Current file directory: ${__dirname}`);
         
         // Try multiple possible locations for the .byterules file
         const possiblePaths = [
@@ -251,24 +253,24 @@ Each document follows a standard lifecycle:
         let bytesRulesFound = false;
         
         for (const testPath of possiblePaths) {
-          console.log(`Checking path: ${testPath}`);
+          // console.log(`Checking path: ${testPath}`);
           
           if (await fs.pathExists(testPath)) {
-            console.log(`✓ Found .byterules at: ${testPath}`);
+            // console.log(`✓ Found .byterules at: ${testPath}`);
             await fs.copy(testPath, byterulesDest);
-            console.log(`Standard .byterules file copied to: ${byterulesDest}`);
+            // console.log(`Standard .byterules file copied to: ${byterulesDest}`);
             bytesRulesFound = true;
             break;
           } else {
-            console.log(`✗ Not found at: ${testPath}`);
+            // console.log(`✗ Not found at: ${testPath}`);
           }
         }
         
         // If no .byterules file found, create one with the default content
         if (!bytesRulesFound) {
-          console.log('No .byterules template found, creating default');
+          // console.log('No .byterules template found, creating default');
           await fs.writeFile(byterulesDest, defaultByterules, 'utf-8');
-          console.log(`Default .byterules file created at: ${byterulesDest}`);
+          // console.log(`Default .byterules file created at: ${byterulesDest}`);
         }
         
       } catch (error) {
@@ -585,7 +587,7 @@ server.tool(
       const defaultOutputPath = path.resolve(path.join(process.cwd(), 'memory-bank-export'));
       const targetOutputPath = outputPath ? path.resolve(outputPath) : defaultOutputPath;
       
-      console.log(`Exporting Memory Bank from ${MEMORY_BANK_DIR} to ${targetOutputPath}`);
+      // console.log(`Exporting Memory Bank from ${MEMORY_BANK_DIR} to ${targetOutputPath}`);
       
       // Call exportMemoryBank function
       const exportResult = await exportMemoryBank(MEMORY_BANK_DIR, format, targetOutputPath);
@@ -621,10 +623,10 @@ server.tool(
   },
   async ({ projectPurpose, location }) => {
     try {
-      // Diagnostics: Log environment info
-      console.log(`Current working directory: ${process.cwd()}`);
-      console.log(`Node version: ${process.version}`);
-      console.log(`Platform: ${process.platform}`);
+      // Diagnostics: Log environment info - removed console.logs
+      // console.log(`Current working directory: ${process.cwd()}`);
+      // console.log(`Node version: ${process.version}`);
+      // console.log(`Platform: ${process.platform}`);
       
       // Determine where to create the .cursor directory
       let baseDir;
@@ -638,22 +640,22 @@ server.tool(
           // If relative path is provided, resolve against current working directory
           baseDir = path.resolve(process.cwd(), location);
         }
-        console.log(`Using user specified base location: ${baseDir}`);
+        // console.log(`Using user specified base location: ${baseDir}`);
       } else {
         // If no location provided, use current working directory as base
         baseDir = process.cwd();
-        console.log(`No location specified, using current directory as base: ${baseDir}`);
+        // console.log(`No location specified, using current directory as base: ${baseDir}`);
       }
       
       // Create .cursor directory in the base directory
       const cursorDir = path.join(baseDir, '.cursor');
-      console.log(`Will create Cursor Rules at: ${cursorDir}`);
+      // console.log(`Will create Cursor Rules at: ${cursorDir}`);
       
       // Ensure parent directory exists if needed
       const parentDir = path.dirname(cursorDir);
       try {
         await fs.ensureDir(parentDir);
-        console.log(`Ensured parent directory exists: ${parentDir}`);
+        // console.log(`Ensured parent directory exists: ${parentDir}`);
       } catch (error) {
         console.error(`Error ensuring parent directory: ${error}`);
         throw new Error(`Cannot create or access parent directory: ${error}`);
@@ -662,7 +664,7 @@ server.tool(
       // Ensure .cursor directory exists
       try {
         await fs.ensureDir(cursorDir);
-        console.log(`Created .cursor directory: ${cursorDir}`);
+        // console.log(`Created .cursor directory: ${cursorDir}`);
       } catch (error) {
         console.error(`Error creating .cursor directory: ${error}`);
         throw new Error(`Cannot create .cursor directory: ${error}`);
@@ -670,17 +672,17 @@ server.tool(
       
       // Create the cursor-rules.mdc file
       const cursorRulesPath = path.join(cursorDir, 'cursor-rules.mdc');
-      console.log(`Will create cursor-rules.mdc at: ${cursorRulesPath}`);
+      // console.log(`Will create cursor-rules.mdc at: ${cursorRulesPath}`);
       
       // Generate content for the rules file based on project purpose
-      console.log(`Generating cursor rules content for purpose: ${projectPurpose}`);
+      // console.log(`Generating cursor rules content for purpose: ${projectPurpose}`);
       try {
         const cursorRulesContent = await generateCursorRules(projectPurpose);
         
         // Save the file
         try {
           await fs.writeFile(cursorRulesPath, cursorRulesContent, 'utf-8');
-          console.log(`Created cursor-rules.mdc at: ${cursorRulesPath}`);
+          // console.log(`Created cursor-rules.mdc at: ${cursorRulesPath}`);
         } catch (error) {
           console.error(`Error creating cursor-rules.mdc file: ${error}`);
           throw new Error(`Cannot create cursor-rules.mdc file: ${error}`);
@@ -695,14 +697,14 @@ server.tool(
       } catch (ruleGenError) {
         console.error(`Error generating cursor rules content: ${ruleGenError}`);
         
-        // Detaylı hata mesajı oluştur
+        // Create detailed error message
         let errorMessage = 'Error generating Cursor Rules content: ';
         if (ruleGenError instanceof Error) {
           errorMessage += ruleGenError.message;
           
-          // API key ile ilgili hata mesajlarını daha açıklayıcı hale getir
+          // Make API key-related error messages more descriptive
           if (ruleGenError.message.includes('GEMINI_API_KEY') || ruleGenError.message.includes('API key')) {
-            errorMessage += '\n\nÖnemli: Bu özellik Gemini API kullanıyor. Lütfen .env dosyasında geçerli bir GEMINI_API_KEY tanımladığınızdan emin olun.';
+            errorMessage += '\n\nImportant: This feature uses the Gemini API. Please ensure you have a valid GEMINI_API_KEY defined in your .env file.';
           }
         } else {
           errorMessage += String(ruleGenError);
@@ -770,9 +772,10 @@ export async function startServer(): Promise<void> {
   const transport = new StdioServerTransport();
   
   try {
-    console.log('Starting Memory Bank MCP server...');
+    // Remove startup logs
+    // console.log('Starting Memory Bank MCP server...');
     await server.connect(transport);
-    console.log('Memory Bank MCP server successfully started!');
+    // console.log('Memory Bank MCP server successfully started!');
   } catch (error) {
     console.error('Error starting server:', error);
     process.exit(1);

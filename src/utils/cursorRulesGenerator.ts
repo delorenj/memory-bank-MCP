@@ -1,7 +1,7 @@
 /**
  * Utility functions for generating Cursor rules
  *
- * Note: This module dynamically imports the gemini.js module when necessary
+ * Note: This module dynamically imports the gemini.ts module when necessary
  * to generate AI-powered content for cursor rules.
  */
 
@@ -17,32 +17,30 @@ export async function generateCursorRules(purpose: string): Promise<string> {
   // Project type detection based on user's purpose
   const projectType = detectProjectType(purpose);
 
-  // AI ile içerik oluştur
+  // Generate content with AI
   try {
-    console.log("Attempting to generate cursor rules with AI...");
     const mainRulesContent = await generateMainCursorRulesWithAI(
       purpose,
       currentDate,
       projectType
     );
-    console.log("Successfully generated cursor rules with AI");
     return mainRulesContent;
   } catch (error) {
     console.error("Error generating cursor rules with AI:", error);
     
-    // Hata detayı için log ekleyelim
+    // Add more detailed logs for error
     if (error instanceof Error) {
       console.error("Error details:", error.message);
       if (error.stack) {
         console.error("Error stack:", error.stack);
       }
       
-      // Kullanıcıya daha açıklayıcı hata mesajı göster
-      throw new Error(`AI ile içerik oluşturulamadı: ${error.message}`);
+      // Show more descriptive error message to user
+      throw new Error(`Failed to generate content with AI: ${error.message}`);
     }
     
-    // Genel hata durumunda
-    throw new Error("AI ile içerik oluşturulamadı. Lütfen daha sonra tekrar deneyin.");
+    // General error case
+    throw new Error("Failed to generate content with AI. Please try again later.");
   }
 }
 
@@ -119,9 +117,7 @@ alwaysApply: true
 ---`;
 
   try {
-    console.log("Dynamically importing gemini.js module...");
-    const { generateContent } = await import("./gemini.js");
-    console.log("Successfully imported gemini.js module");
+    const { generateContent } = await import("./gemini.ts");
 
     const prompt = `
 As a software development expert, you are creating Cursor rules for the ${purpose} project.
@@ -210,9 +206,7 @@ Each guideline should be actionable and specific.
 End with a footer containing "Powered by tuncer-byte" and GitHub reference.
 `;
 
-    console.log("Sending request to Gemini API...");
     const aiGeneratedContent = await generateContent(prompt);
-    console.log("Successfully received response from Gemini API");
 
     return `${frontmatter}
 
@@ -224,23 +218,23 @@ ${aiGeneratedContent}
   } catch (error) {
     console.error("Error generating cursor rules with AI:", error);
 
-    // Daha açıklayıcı hata mesajı
+    // More descriptive error message
     if (error instanceof Error) {
       if (error.message.includes("GEMINI_API_KEY")) {
         throw new Error(
-          "Gemini API anahtarı bulunamadı. Lütfen .env dosyasında GEMINI_API_KEY değişkenini tanımlayın."
+          "Gemini API key not found. Please define the GEMINI_API_KEY variable in your .env file."
         );
       } else if (
         error.message.includes("network") ||
         error.message.includes("fetch")
       ) {
         throw new Error(
-          "Gemini API ile iletişim kurulamadı. Lütfen internet bağlantınızı kontrol edin."
+          "Could not communicate with Gemini API. Please check your internet connection."
         );
       }
     }
 
-    // Orijinal hatayı yeniden fırlat
+    // Rethrow the original error
     throw error;
   }
 }

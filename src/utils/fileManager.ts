@@ -7,16 +7,10 @@ import path from 'path';
  */
 export async function createMemoryBankStructure(outputDir: string): Promise<void> {
   try {
-    console.log(`Creating Memory Bank structure in existing directory: ${outputDir}`);
-    
     // Verify directory exists
     if (!await fs.pathExists(outputDir)) {
-      console.warn(`Directory does not exist: ${outputDir}, will create it`);
       await fs.ensureDir(outputDir);
     }
-    
-    // No subdirectories needed - using a flat structure for simplicity
-    console.log(`Using flat structure for Memory Bank in "${outputDir}"`);
     
     // Create a README.md file with component descriptions
     const readmePath = path.join(outputDir, 'README.md');
@@ -45,14 +39,11 @@ See the \`.byterules\` file for detailed guidelines on how to maintain and updat
 `;
     try {
       await fs.writeFile(readmePath, readmeContent, 'utf-8');
-      console.log(`README file created at: ${readmePath}`);
     } catch (error) {
       const err = error as any;
       console.error(`Error creating README file: ${err.code} - ${err.message}`);
       // Continue without README
     }
-    
-    console.log(`Memory Bank structure successfully created in "${outputDir}".`);
   } catch (error) {
     console.error(`Error creating directory structure at ${outputDir}:`, error);
     if (error instanceof Error) {
@@ -75,8 +66,6 @@ export async function saveDocument(content: string, filePath: string): Promise<v
     
     // Write file
     await fs.writeFile(filePath, content, 'utf-8');
-    
-    console.log(`Document saved: ${filePath}`);
   } catch (error) {
     console.error('Error saving document:', error);
     throw new Error(`Failed to save document: ${error}`);
@@ -163,7 +152,6 @@ export async function exportMemoryBank(sourceDir: string, format: string = 'fold
       // Export as folder (copy entire directory structure)
       const exportFolderPath = path.join(exportDir, path.basename(sourceDir));
       await fs.copy(sourceDir, exportFolderPath);
-      console.log(`Memory Bank folder exported to "${exportFolderPath}".`);
       return exportFolderPath;
     } else if (format === 'json') {
       // Export as JSON
@@ -177,7 +165,6 @@ export async function exportMemoryBank(sourceDir: string, format: string = 'fold
       
       const jsonFilePath = outputPath.endsWith('.json') ? outputPath : `${outputPath}.json`;
       await fs.writeFile(jsonFilePath, JSON.stringify(exportData, null, 2), 'utf-8');
-      console.log(`Memory Bank data exported to "${jsonFilePath}" in JSON format.`);
       return jsonFilePath;
     } else {
       throw new Error(`Unsupported format: ${format}. Use 'folder' or 'json'.`);
