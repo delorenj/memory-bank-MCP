@@ -117,7 +117,7 @@ alwaysApply: true
 ---`;
 
   try {
-    const { generateContent } = await import("./gemini.ts");
+    const { generateContent } = await import("./gemini.js");
 
     const prompt = `
 As a software development expert, you are creating Cursor rules for the ${purpose} project.

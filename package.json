@@ -1,9 +1,14 @@
 {
-  "name": "memory-bank-mcp",
-  "version": "1.0.0",
+  "name": "@delorenj/memory-bank-mcp",
+  "version": "2.0.0",
   "description": "Implements a file based memory bank and provides a set of tools for interacting with it.",
   "main": "dist/index.ts",
   "type": "module",
+  "private": false,
+  "bin": "./dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.ts",
@@ -25,4 +30,4 @@
   "keywords": ["mcp", "memory-bank", "gemini", "ai"],
   "author": "Jarad DeLorenzo",
   "license": "MIT"
-} 
+}

@@ -1,4 +1,5 @@
-import { startServer } from './mcp/memoryBankMcp.ts';
+#!/usr/bin/env node
+import { startServer } from './mcp/memoryBankMcp.js';
 
 // Main function
 async function main() {

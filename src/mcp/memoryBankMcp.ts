@@ -4,15 +4,15 @@ import { z } from 'zod';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
-import { generateAllDocuments } from '../utils/gemini.ts';
+import { generateAllDocuments } from '../utils/gemini.js';
 import { 
   createMemoryBankStructure, 
   saveDocument, 
   readDocument, 
   readAllDocuments, 
   exportMemoryBank 
-} from '../utils/fileManager.ts';
-import { generateCursorRules } from '../utils/cursorRulesGenerator.ts';
+} from '../utils/fileManager.js';
+import { generateCursorRules } from '../utils/cursorRulesGenerator.js';
 
 // Create MCP server
 const server = new McpServer({
