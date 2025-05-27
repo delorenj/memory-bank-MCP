@@ -8,10 +8,6 @@
   </p>
 </div>
 
-<a href="https://glama.ai/mcp/servers/@tuncer-byte/memory-bank-MCP">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@tuncer-byte/memory-bank-MCP/badge" alt="Memory Bank MCP server" />
-</a>
-
 Memory Bank is an MCP server that helps teams create, manage, and access structured project documentation. It generates and maintains a set of interconnected Markdown documents that capture different aspects of project knowledge, from high-level goals to technical details and day-to-day progress.
 
 ## Features
@@ -32,7 +28,7 @@ git clone https://github.com/delorenj/memory-bank-mcp.git
 cd memory-bank-mcp
 
 # Install dependencies
-npm install
+pnpm install
 
 # Create .env file with your Gemini API key (optional)
 echo "GEMINI_API_KEY=your_api_key_here" > .env
@@ -44,17 +40,17 @@ echo "GEMINI_API_KEY=your_api_key_here" > .env
 
 ```bash
 # Start in development mode
-npm run dev
+pnpm run dev
 ```
 
 ### Production Mode
 
 ```bash
 # Build the project
-npm run build
+pnpm run build
 
 # Start in production mode
-npm run start
+pnpm run start
 ```
 
 ### MCP Configuration
@@ -96,6 +92,23 @@ await callTool({
   }
 });
 ```
+
+### Configuration
+
+Memory Bank can be configured using a `.memorybankconfig` file in JSON format:
+
+```json
+{
+  "bankName": "memory-bank",
+  "bankPath": "./docs"
+}
+```
+
+- `bankName`: The name of the memory bank folder (default: "memory-bank")
+- `bankPath`: The path where the memory bank folder will be created (default: "./docs")
+
+The configuration file is optional. If not present, default values will be used.
+Command-line parameters (like `location`) take precedence over config file values.
 
 ### `update_document`
 

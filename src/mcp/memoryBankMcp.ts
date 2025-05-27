@@ -10,7 +10,8 @@ import {
   saveDocument, 
   readDocument, 
   readAllDocuments, 
-  exportMemoryBank 
+  exportMemoryBank,
+  readMemoryBankConfig
 } from '../utils/fileManager.js';
 import { generateCursorRules } from '../utils/cursorRulesGenerator.js';
 
@@ -67,7 +68,7 @@ server.tool(
   {
     goal: z.string().min(10, 'Project goal must be at least 10 characters'),
     geminiApiKey: z.string().optional().describe('Gemini API key (optional)'),
-    location: z.string().describe('Absolute path where memory-bank folder will be created')
+    location: z.string().optional().describe('Absolute path where memory-bank folder will be created')
   },
   async ({ goal, geminiApiKey, location }) => {
     try {
@@ -76,20 +77,26 @@ server.tool(
       // console.log(`Node version: ${process.version}`);
       // console.log(`Platform: ${process.platform}`);
       
+      // Read config file
+      const config = await readMemoryBankConfig();
+      
       // Determine where to create the memory-bank directory
       let baseDir;
       let memoryBankDir;
       
-      if (location) {
-        // Use user-specified location as the base directory
-        if (path.isAbsolute(location)) {
+      // Location parameter takes precedence over config file
+      const effectiveLocation = location || config.bankPath;
+      
+      if (effectiveLocation) {
+        // Use specified location as the base directory
+        if (path.isAbsolute(effectiveLocation)) {
           // If absolute path is provided, use it directly as base directory
-          baseDir = location;
+          baseDir = effectiveLocation;
         } else {
           // If relative path is provided, resolve against current working directory
-          baseDir = path.resolve(process.cwd(), location);
+          baseDir = path.resolve(process.cwd(), effectiveLocation);
         }
-        // console.log(`Using user specified base location: ${baseDir}`);
+        // console.log(`Using specified base location: ${baseDir}`);
       } else {
         // If no location provided, use current working directory as base
         baseDir = process.cwd();
@@ -97,7 +104,8 @@ server.tool(
       }
       
       // Create memory-bank directory inside the base directory
-      memoryBankDir = path.join(baseDir, 'memory-bank');
+      // Use bankName from config if available
+      memoryBankDir = path.join(baseDir, config.bankName);
       // console.log(`Will create Memory Bank structure at: ${memoryBankDir}`);
       
       // Ensure parent directory exists if needed

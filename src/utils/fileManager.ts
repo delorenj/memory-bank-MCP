@@ -2,6 +2,40 @@ import fs from 'fs-extra';
 import path from 'path';
 
 /**
+ * Reads the Memory Bank config file
+ * @returns Config object with bankName and bankPath
+ */
+export async function readMemoryBankConfig(): Promise<{bankName: string, bankPath: string}> {
+  try {
+    const configPath = path.join(process.cwd(), '.memorybankconfig');
+    
+    // Check if config file exists
+    if (await fs.pathExists(configPath)) {
+      const configContent = await fs.readFile(configPath, 'utf-8');
+      const config = JSON.parse(configContent);
+      
+      return {
+        bankName: config.bankName || 'memory-bank',
+        bankPath: config.bankPath || './docs'
+      };
+    }
+    
+    // Return defaults if no config file
+    return {
+      bankName: 'memory-bank',
+      bankPath: './docs'
+    };
+  } catch (error) {
+    console.error('Error reading config file:', error);
+    // Return defaults on error
+    return {
+      bankName: 'memory-bank',
+      bankPath: './docs'
+    };
+  }
+}
+
+/**
  * Creates the Memory Bank directory structure
  * @param outputDir Output directory (must already exist)
  */
