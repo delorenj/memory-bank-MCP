@@ -62,6 +62,32 @@ const getWorkspaceRootDir = () => {
 // Default document directory path - initialize to null, will be set during initialization
 let MEMORY_BANK_DIR: string | null = null;
 
+// Function to initialize MEMORY_BANK_DIR at startup
+async function initializeMemoryBankDir(): Promise<void> {
+  try {
+    const config = await readMemoryBankConfig();
+    if (config && config.bankPath && config.bankName) {
+      let bankPath = config.bankPath;
+      if (!path.isAbsolute(bankPath)) {
+        const workspaceRoot = getWorkspaceRootDir();
+        bankPath = path.resolve(workspaceRoot, bankPath);
+      }
+      MEMORY_BANK_DIR = path.join(bankPath, config.bankName);
+      // console.log(`MEMORY_BANK_DIR initialized to: ${MEMORY_BANK_DIR}`);
+    } else {
+      // console.log('Memory bank config not found or incomplete, MEMORY_BANK_DIR not set at startup.');
+    }
+  } catch (error) {
+    console.error('Error initializing MEMORY_BANK_DIR at startup:', error);
+  }
+}
+
+// Call the initialization function at startup
+initializeMemoryBankDir().catch(error => {
+  // Catch errors during async initialization if not handled inside
+  console.error('Failed to initialize Memory Bank Directory on startup:', error);
+});
+
 // Initialize Memory Bank - create new document structure
 server.tool(
   'initialize_memory_bank',
